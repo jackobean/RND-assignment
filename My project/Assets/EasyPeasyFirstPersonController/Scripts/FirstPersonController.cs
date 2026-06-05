@@ -3,6 +3,7 @@ namespace EasyPeasyFirstPersonController
     using System;
     using System.Collections;
     using UnityEngine;
+    using UnityEngine.Rendering;
 
     public partial class FirstPersonController : MonoBehaviour
     {
@@ -68,13 +69,17 @@ namespace EasyPeasyFirstPersonController
         private float slideSpeedVelocity;
         private float currentTiltAngle;
         private float tiltVelocity;
-        public AudioSource footstep;
+        //public AudioSource footstep;
+
+        public GameObject FireBall;
+        public GameObject shotPos;
+
         public float CurrentCameraHeight => isCrouching || isSliding ? crouchCameraHeight : originalCameraParentHeight;
 
         private void Awake()
         {
-            footstep = GetComponent<AudioSource>();
-            footstep.Play(0);
+            //footstep = GetComponent<AudioSource>();
+            //footstep.Play(0);
             characterController = GetComponent<CharacterController>();
             cam = playerCamera.GetComponent<Camera>();
             originalHeight = characterController.height;
@@ -98,6 +103,10 @@ namespace EasyPeasyFirstPersonController
 
         private void Update()
         {
+            if(Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                Shoot();
+            }
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask, groundCheckQueryTriggerInteraction);
             if (isGrounded && moveDirection.y < 0)
             {
@@ -181,6 +190,12 @@ namespace EasyPeasyFirstPersonController
             HandleMovement();
         }
 
+        public void Shoot()
+        {
+            var shot = Instantiate(FireBall, shotPos.transform.position, shotPos.transform.rotation);
+            shot.GetComponent<Rigidbody>().AddForce(this.gameObject.transform.forward, ForceMode.Impulse);
+
+        }
         private void HandleHeadBob()
         {
             Vector3 horizontalVelocity = new Vector3(characterController.velocity.x, 0f, characterController.velocity.z);
@@ -214,11 +229,11 @@ namespace EasyPeasyFirstPersonController
                     currentCameraHeight + currentBobOffset,
                     cameraParent.localPosition.z);
                 recoil.z = moveInput.x * -2f;
-                footstep.UnPause();
+                //footstep.UnPause();
             }
             else
             {
-                footstep.Pause();
+                //footstep.Pause();
                 bobTimer = 0f;
                 float targetCameraHeight = isCrouching || isSliding ? crouchCameraHeight : originalCameraParentHeight;
                 currentCameraHeight = Mathf.Lerp(currentCameraHeight, targetCameraHeight, Time.deltaTime * 10f);
